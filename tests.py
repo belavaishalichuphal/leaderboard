@@ -56,7 +56,7 @@ class BaseTestCase(unittest.TestCase):
         self.assertEqual(response.get('error'), 'Name, age and address are manadatory fields,')
 
     def test_c_user_has_zero_intially(self):
-        response = self.client.post("add-user/",
+        response = self.client.post("user/",
                                     headers=self.get_api_headers(),
                                     data=json.dumps(self.data))
         self.assertEqual(response.status_code, 200)
@@ -68,26 +68,29 @@ class BaseTestCase(unittest.TestCase):
         self.assertEqual(user_score[app.config['GLOBAL_INDEX']]['points'], 0)
 
     def test_d_user_score_plus(self):
-        response = self.client.patch("score/1/update/",
-                                    headers=self.get_api_headers(),
-                                    data=json.dumps({"points": 10}))
+        query = {"operation": "plus"}
+        response = self.client.patch("score/1/", query_string = query,
+                                    headers=self.get_api_headers(), data="{}"
+                                    )
         self.assertEqual(response.status_code, 200)
         app = current_app._get_current_object()
         user_score = app.config['USERS_INFO']
         self.assertEqual(user_score[1]['points'], 10)
 
     def test_e_user_score_minus(self):
-        response = self.client.patch("score/1/update/",
+        query = {"operation": "minus"}
+        response = self.client.patch("score/1/", query_string = query,
                                     headers=self.get_api_headers(),
-                                    data=json.dumps({"points": -100}))
+                                     data="{}"
+                                    )
         self.assertEqual(response.status_code, 200)
         app = current_app._get_current_object()
         user_score = app.config['USERS_INFO']
-        self.assertEqual(user_score[1]['points'], -90)
+        self.assertEqual(user_score[1]['points'], 0)
 
     def test_f_user_list(self):
-        response = self.client.get("list-user/",
-                                    headers=self.get_api_headers())
+        response = self.client.get("user/",
+                                    headers=self.get_api_headers(), data="{}")
         self.assertEqual(response.status_code, 200)
         app = current_app._get_current_object()
         user_score = app.config['USERS_INFO']
@@ -95,7 +98,7 @@ class BaseTestCase(unittest.TestCase):
         self.assertEqual(user_score[1], response['response'][0]['1'])
 
     def test_g_user_delete(self):
-        response = self.client.delete("delete-user/1/",
+        response = self.client.delete("user/1/",
                                     headers=self.get_api_headers())
         self.assertEqual(response.status_code, 200)
         app = current_app._get_current_object()
